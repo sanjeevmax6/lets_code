@@ -1,2 +1,10 @@
 import Workspace from './workspace';
-export default function Home() { return <Workspace />; }
+import { requireChatGPTUser } from './chatgpt-auth';
+export const dynamic = 'force-dynamic';
+async function PrivateWorkspace() {
+  await requireChatGPTUser('/');
+  return <Workspace />;
+}
+export default function Home() {
+  return <PrivateWorkspace />;
+}

@@ -26,7 +26,7 @@ AI provider accounts/keys are required for arbitrary generation; they are not pr
 Node 22.13+ is required. Use `npm ci`, then `npm run build`. Apply the generated migration locally:
 
 ```sh
-npx wrangler d1 execute DB --local --config dist/server/wrangler.json --file drizzle/0000_goofy_shooting_star.sql
+npx wrangler d1 execute DB --local --persist-to .wrangler/state --config dist/server/wrangler.json --file drizzle/0000_goofy_shooting_star.sql
 npm run dev
 ```
 

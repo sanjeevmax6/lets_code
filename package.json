@@ -12,7 +12,7 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "db:generate": "drizzle-kit generate",
-    "test": "node --import tsx --test tests/judge.test.ts tests/runtime.test.ts",
+    "test": "node --import tsx --test tests/judge.test.ts tests/runtime.test.ts tests/runner.test.ts",
     "test:api": "node --import tsx --test tests/api.test.ts",
     "typecheck": "tsc --noEmit"
   },
