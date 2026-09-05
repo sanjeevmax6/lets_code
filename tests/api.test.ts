@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+const base=process.env.TEST_ORIGIN||'http://localhost:3000';
+test('runner denies same-origin privileges and limits browser capabilities',async()=>{const r=await fetch(base+'/api/runner');assert.equal(r.status,200);const policy=r.headers.get('content-security-policy')||'';assert.match(policy,/default-src 'none'/);assert.match(policy,/frame-ancestors 'self'/);assert.match(policy,/form-action 'none'/);assert.match(policy,/worker-src blob:/)});
+test('private API rejects forged cross-site mutations before writing',async()=>{const r=await fetch(base+'/api/library',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://attacker.example'},body:'{}'});assert.ok([401,403].includes(r.status),String(r.status))});
+test('research rejects missing provider configuration or invalid payload',async()=>{const r=await fetch(base+'/api/research',{method:'POST',headers:{'Content-Type':'application/json',Origin:base},body:JSON.stringify({prompt:'Find a pair of numbers',search:true})});assert.ok([401,428].includes(r.status),String(r.status))});

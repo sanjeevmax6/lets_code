@@ -1,0 +1,3 @@
+import {ProblemSchema} from '@/lib/problem';import {owner,db,body,respond,failure} from '@/lib/server';
+export async function GET(){try{const user=await owner();const rows=await db().prepare('SELECT body FROM problems WHERE owner=? ORDER BY created DESC LIMIT 200').bind(user).all<{body:string}>();return respond({problems:rows.results.map(r=>JSON.parse(r.body))})}catch(e){return failure(e)}}
+export async function POST(request:Request){try{const user=await owner(request);const p=ProblemSchema.parse(await body(request));const id=crypto.randomUUID();const saved={...p,id};await db().prepare('INSERT INTO problems(id,owner,body,created) VALUES (?,?,?,?)').bind(id,user,JSON.stringify(saved),Date.now()).run();return respond({problem:saved},201)}catch(e){return failure(e)}}
