@@ -2,6 +2,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import subprocess
 from .core import Library, digest, now, read_json
 from .ingest import ingest_event, import_export, import_file
 from .extract import run_extraction
@@ -55,9 +56,25 @@ def main():
     graph = commands.add_parser('graph')
     graph.add_argument('action', choices=['rebuild','export','query'])
     graph.add_argument('query', nargs='?')
+    commands.add_parser('recover')
+    attach = commands.add_parser('attach')
+    attach.add_argument('item_id')
+    attach.add_argument('path', type=Path)
+    attach.add_argument('--coverage', choices=['partial','full','abstract'], default='partial')
+    sync = commands.add_parser('sync')
+    sync.add_argument('provider', choices=['whatsapp'])
+    sync.add_argument('--self', action='store_true')
+    sync.add_argument('--list', action='store_true')
+    sync.add_argument('--watch', action='store_true')
+    sync.add_argument('--limit', type=int, default=250)
     args = parser.parse_args()
     library = Library(args.root)
     try:
+        if args.command == 'sync':
+            command = ['node',str(library.root/'connectors/whatsapp/collector.mjs'),'--limit',str(args.limit)]
+            for name in ['self','list','watch']:
+                if getattr(args,name): command.append('--'+name)
+            return subprocess.run(command,cwd=library.root).returncode
         with library.lock():
             if args.command == 'init':
                 result = {'initialized': str(library.root)}
@@ -84,6 +101,28 @@ def main():
                 result['views'] = rebuild(library)
                 result['run_id'] = run_id
                 write_json(library.path(f'runs/{run_id}/manifest.json'), result)
+            elif args.command == 'recover':
+                recovered = []
+                for path in sorted((library.root/'inbox/events').glob('*.json')):
+                    recovered.extend(ingest_event(library,read_json(path)))
+                result = {'reconciled':len(set(recovered)), 'views':rebuild(library)}
+            elif args.command == 'attach':
+                from .ingest import source_version
+                from .extract import extract_item
+                import mimetypes
+                item = library.item(args.item_id)
+                if args.path.stat().st_size > library.config().get('max_download_bytes',26214400):
+                    raise ValueError('Attachment exceeds size limit')
+                if item['analysis']['status'] == 'complete':
+                    write_json(library.path(f'runs/analysis-history/{item["id"]}/{digest(now())[:16]}.json'),item['analysis'])
+                    from .core import new_item
+                    item['analysis'] = new_item(item['id'],item['kind'],item['original_url'],item['capture_events'][0],item['first_saved_at'])['analysis']
+                source_version(library,item,args.path.read_bytes(),args.path.name,mimetypes.guess_type(args.path.name)[0] or 'application/octet-stream')
+                library.save(item)
+                extract_item(library,item)
+                item['retrieval']['coverage'] = args.coverage
+                library.save(item)
+                result = {'attached':item['id'],'analysis_packets':prepare(library),'views':rebuild(library)}
             elif args.command == 'prepare':
                 result = prepare(library, args.limit)
             elif args.command == 'submit':

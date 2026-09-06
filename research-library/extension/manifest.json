@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Research Library",
+  "version": "0.1.0",
+  "description": "Your saved research highlights alongside the original article.",
+  "permissions": [
+    "sidePanel",
+    "nativeMessaging",
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_title": "Open research highlights"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAztpeYjqlOJrRmYGZF64beuhMB7HoFPdrDtBHhzkvCI85PQl+JafrCnZQjuHqyzqu08I0G+nzELjriw67avz+6Ak8if4dinbmHRA+/OF+UnngBwTcVNdFp7YF9PuTH2G/MvFFVoeSDDMcojB3IIEGOcuqnkCwlM8VmgUkYuOkowR/Q5ImQPRGWOxXW9M2+Pv6qYynGsd2Spj7ka/8E/iGOyRcbOLo/k6vz+JNqTbaDABCowDubqzlcjKC+dwa2DZNMNN2VHMwW3Wy2p2ZROri3GHDC0brbYIPmzgsphGcnJzaXx1kOZt1KsPhcpaeuND2d53VcPrL9az7vXFXxkO/lwIDAQAB"
+}

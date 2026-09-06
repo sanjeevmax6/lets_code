@@ -98,7 +98,7 @@ def ingest_event(library, event):
         with library.db() as db:
             exists = db.execute('SELECT 1 FROM jobs WHERE item_id=?', (item_id,)).fetchone()
         if not exists:
-            library.job(item_id, 'captured' if item['content_versions'] else 'queued')
+            library.job(item_id, 'published' if item['analysis']['status'] == 'complete' else 'extracted' if item['retrieval']['status'] == 'extracted' else 'captured' if item['content_versions'] else 'queued')
         result.append(item_id)
     return result
 

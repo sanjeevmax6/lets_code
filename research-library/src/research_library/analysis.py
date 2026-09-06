@@ -14,6 +14,7 @@ def prepare(library, limit=25):
         packet = {'item_id':item['id'], 'record_path':str(library.item_path(item['id'])),
                   'text_path':str(library.path(version['text_path'])), 'version_id':version['id'],
                   'text_sha256':version['text_sha256'], 'pages_path':str(library.path(version['pages_path'])) if version['pages_path'] else None,
+                  'metadata':{key:item[key] for key in ['title','authors','publisher','published_at','identifiers']},
                   'analysis':deepcopy(item['analysis'])}
         packet['analysis']['provenance'] = {'agent':'REPLACE_WITH_AGENT','model':None,'prompt_version':'1.0.0',
                   'run_id':'analysis_' + digest(now())[:16], 'input_hashes':[version['text_sha256']], 'generated_at':now()}
@@ -64,6 +65,10 @@ def submit(library, path):
             raise ValueError('Relationship does not reference this item')
     candidate = deepcopy(item)
     candidate['analysis'] = analysis
+    for key,value in packet.get('metadata',{}).items():
+        if key not in {'title','authors','publisher','published_at','identifiers'}:
+            raise ValueError('Unsupported metadata field')
+        candidate[key] = value
     library.save(candidate)
     library.job(item['id'], 'published')
     return item['id']

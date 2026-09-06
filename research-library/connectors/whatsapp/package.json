@@ -1,0 +1,17 @@
+{
+  "name": "research-library-whatsapp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test.mjs",
+    "sync": "node collector.mjs"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "1.34.7",
+    "qrcode-terminal": "0.12.0"
+  },
+  "overrides": {
+    "puppeteer": "25.10.0"
+  }
+}
