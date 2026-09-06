@@ -7,13 +7,16 @@
       "const": "1.0.0"
     },
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^relation_[a-zA-Z0-9]+$"
     },
     "source_id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^(item|entity)_[a-zA-Z0-9]+$"
     },
     "target_id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^(item|entity)_[a-zA-Z0-9]+$"
     },
     "type": {
       "enum": [
@@ -42,14 +45,16 @@
         "additionalProperties": false,
         "properties": {
           "item_id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^item_[a-zA-Z0-9]+$"
           },
           "locator": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "version_id": {
-                "type": "string"
+                "type": "string",
+                "pattern": "^version_[a-zA-Z0-9]+$"
               },
               "quote": {
                 "type": "string",

@@ -93,13 +93,15 @@
     "capture_events": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^event_[a-zA-Z0-9]+$"
       }
     },
     "user_comment_refs": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^event_[a-zA-Z0-9]+$"
       }
     },
     "retrieval": {
@@ -254,7 +256,8 @@
                 "additionalProperties": false,
                 "properties": {
                   "version_id": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^version_[a-zA-Z0-9]+$"
                   },
                   "quote": {
                     "type": "string",
@@ -313,7 +316,8 @@
                 "additionalProperties": false,
                 "properties": {
                   "version_id": {
-                    "type": "string"
+                    "type": "string",
+                    "pattern": "^version_[a-zA-Z0-9]+$"
                   },
                   "quote": {
                     "type": "string",
@@ -367,19 +371,22 @@
         "topic_ids": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^entity_[a-zA-Z0-9]+$"
           }
         },
         "entity_ids": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^entity_[a-zA-Z0-9]+$"
           }
         },
         "relationship_ids": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^relation_[a-zA-Z0-9]+$"
           }
         },
         "provenance": {

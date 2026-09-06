@@ -17,7 +17,10 @@ def handle(library, request):
     action = request.get('action')
     if action == 'enqueue':
         with library.lock():
-            return {'queued':ingest_event(library, {'source':'chrome','source_id':digest(now()+url),'text':url})}
+            ids = ingest_event(library, {'source':'chrome','source_id':digest(now()+url),'text':url})
+            from .views import rebuild
+            rebuild(library)
+            return {'queued':ids}
     if action != 'lookup':
         raise ValueError('Unsupported operation')
     found = next((i for i in library.items() if i['canonical_url'] == url), None)

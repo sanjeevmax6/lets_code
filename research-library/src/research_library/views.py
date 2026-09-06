@@ -9,7 +9,7 @@ import sqlite3
 import subprocess
 from urllib.parse import quote
 from .core import atomic_write, digest, now, read_json, write_json
-from .validation import validate_item, validate_schema
+from .validation import validate_item, validate_schema, validate_relationship
 
 
 def safe_text(value):
@@ -23,7 +23,7 @@ def rebuild(library):
     for item in items:
         validate_item(library, item)
     for relation in relationships:
-        validate_schema('relationship', relation)
+        validate_relationship(library, relation)
     index = library.root/'derived/search.next.sqlite'
     if index.exists():
         index.unlink()
@@ -99,6 +99,8 @@ def rebuild(library):
     write_json(library.path('derived/graphify/graph.json'), graph)
     home = ['# Reading library', '', f'{len(items)} saved sources · {sum(i["analysis"]["status"] == "complete" for i in items)} analyzed', '', '## Sources', '']
     home += [f"- [[Sources/{i['id']}|{safe_text(i['title'] or i['original_url'] or i['id'])}]] — {i['retrieval']['coverage']}" for i in sorted(items, key=lambda i:i['first_saved_at'], reverse=True)]
+    if not items:
+        home += ['', 'Your library is ready for its first source.', '', 'Send reading to your selected WhatsApp chat, or ask your agent to import a URL, PDF, or chat export.', '', 'Then ask: **Run the pipeline, complete the staged analysis, and summarize my saved reading.**', '', 'Keep your own annotations in the Personal folder. Sources, Topics, and Briefs are generated from validated records.']
     home += ['', '## Briefs', ''] + [f'[[Briefs/{p.stem}]]' for p in sorted((library.root/'vault/Briefs').glob('*.md'), reverse=True)]
     atomic_write(library.path('vault/Start Here.md'), '\n'.join(home)+'\n')
     return {'sources':len(items),'nodes':len(nodes),'edges':len(links)}

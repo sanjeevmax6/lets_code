@@ -89,11 +89,20 @@ def extract_item(library, item):
     max_bytes = config.get('max_download_bytes', 25*1024*1024)
     version = item['content_versions'][-1] if item['content_versions'] else None
     if version is None:
-        data, mime, resolved, status = fetch(item['original_url'], max_bytes, config.get('fetch_timeout_seconds', 30))
+        method = 'http'
+        try:
+            data, mime, resolved, status = fetch(item['original_url'], max_bytes, config.get('fetch_timeout_seconds', 30))
+        except (OSError, ValueError, http.client.HTTPException):
+            if not config.get('firecrawl_enabled'):
+                raise
+            markdown, metadata = firecrawl(item['original_url'],config)
+            data, mime, status = markdown.encode(), 'text/markdown', 200
+            item['title'] = item['title'] or metadata.get('title')
+            method = 'firecrawl-v2'
         is_pdf = data.startswith(b'%PDF-')
-        suffix = 'source.pdf' if is_pdf else 'source.html'
+        suffix = 'source.pdf' if is_pdf else 'source.md' if mime == 'text/markdown' else 'source.html'
         version = source_version(library, item, data, suffix, 'application/pdf' if is_pdf else mime or 'text/html')
-        item['retrieval'].update(status='captured', method='http', retrieved_at=now(), http_status=status)
+        item['retrieval'].update(status='captured', method=method, retrieved_at=now(), http_status=status)
         # Persist capture before extraction, so a parser failure never loses the download.
         library.save(item)
         library.job(item['id'], 'captured')
@@ -121,6 +130,8 @@ def extract_item(library, item):
     elif mime in {'text/plain', 'text/markdown'}:
         text = path.read_text(encoding='utf-8', errors='replace')
         extractor = 'utf8'
+        if item['retrieval']['method'] == 'firecrawl-v2':
+            coverage = 'partial'
     elif mime in {'text/html', 'application/xhtml+xml'}:
         soup = BeautifulSoup(path.read_bytes(), 'html.parser')
         if not item['title']:
@@ -174,7 +185,7 @@ def extract_item(library, item):
 
 
 def run_extraction(library, limit=25, retry=False):
-    report = {'extracted': [], 'failed': []}
+    report = {'extracted': [], 'failed': [], 'unsupported': []}
     with library.db() as db:
         stages = "'queued','captured','failed','blocked'" if retry else "'queued','captured'"
         jobs = db.execute(f'SELECT item_id FROM jobs WHERE stage IN ({stages}) ORDER BY updated_at LIMIT ?', (limit,)).fetchall()
@@ -184,6 +195,8 @@ def run_extraction(library, limit=25, retry=False):
             extract_item(library, item)
             if item['retrieval']['status'] == 'extracted':
                 report['extracted'].append(item['id'])
+            elif item['retrieval']['status'] == 'unsupported':
+                report['unsupported'].append(item['id'])
         except Exception as exc:
             # Keep the batch progressing; the manifest records the exact failing stage.
             error = f'{type(exc).__name__}: {exc}'[:500]

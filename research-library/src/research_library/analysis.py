@@ -1,6 +1,6 @@
 from copy import deepcopy
 from .core import VERSION, digest, now, read_json, write_json
-from .validation import validate_schema, validate_evidence
+from .validation import validate_schema, validate_evidence, validate_relationship
 
 
 def prepare(library, limit=25):
@@ -55,6 +55,8 @@ def submit(library, path):
     if not latest or packet['text_sha256'] != latest['text_sha256']:
         raise ValueError('Staged analysis is stale; prepare against the current content version')
     analysis = packet['analysis']
+    if latest['text_sha256'] not in (analysis.get('provenance') or {}).get('input_hashes',[]):
+        raise ValueError('Analysis provenance must include the current text hash')
     if analysis['status'] != 'complete':
         raise ValueError('Set analysis.status to complete before submitting')
     if analysis['provenance']['agent'] == 'REPLACE_WITH_AGENT':
@@ -87,17 +89,6 @@ def add_entity(library, name, kind='topic'):
 
 def add_relationship(library, path):
     relation = read_json(path)
-    validate_schema('relationship', relation)
-    for node in [relation['source_id'], relation['target_id']]:
-        if not (library.path(f'records/items/{node}.json').exists() or library.path(f'records/entities/{node}.json').exists()):
-            raise ValueError('Relationship endpoint does not exist')
-    if not relation['evidence']:
-        raise ValueError('Relationships require evidence')
-    for entry in relation['evidence']:
-        validate_evidence(library, library.item(entry['item_id']), entry['locator'])
-    if relation['type'] in {'supports','contradicts','extends'}:
-        sources = {e['item_id'] for e in relation['evidence']}
-        if not {relation['source_id'],relation['target_id']}.issubset(sources):
-            raise ValueError('Claim comparison requires evidence from both endpoint sources')
+    validate_relationship(library, relation)
     write_json(library.path(f"records/relationships/{relation['id']}.json"), relation)
     return relation['id']

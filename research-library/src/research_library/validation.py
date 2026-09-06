@@ -38,6 +38,14 @@ def validate_item(library, item):
     for event_id in item['capture_events']:
         if not library.path(f'inbox/events/{event_id}.json').exists():
             raise ValueError('Missing capture event')
+    for version in item['content_versions']:
+        if version['text_path'] and digest(library.path(version['text_path']).read_bytes()) != version['text_sha256']:
+            raise ValueError('Extracted text checksum mismatch')
+    for relation_id in item['analysis']['relationship_ids']:
+        relation = read_json(library.path(f'records/relationships/{relation_id}.json'))
+        validate_relationship(library, relation)
+        if item['id'] not in {relation['source_id'],relation['target_id']}:
+            raise ValueError('Relationship does not reference item')
     if item['analysis']['status'] == 'complete':
         if item['retrieval']['coverage'] in {'none', 'link_only'}:
             raise ValueError('Cannot analyze unread content')
@@ -56,3 +64,18 @@ def validate_item(library, item):
         validate_schema('entity', entity)
         if entity['id'] != entity_id:
             raise ValueError('Entity ID mismatch')
+
+
+def validate_relationship(library, relation):
+    validate_schema('relationship', relation)
+    for node in [relation['source_id'], relation['target_id']]:
+        if not (library.path(f'records/items/{node}.json').exists() or library.path(f'records/entities/{node}.json').exists()):
+            raise ValueError('Relationship endpoint does not exist')
+    if not relation['evidence']:
+        raise ValueError('Relationships require evidence')
+    for entry in relation['evidence']:
+        validate_evidence(library, library.item(entry['item_id']), entry['locator'])
+    if relation['type'] in {'supports','contradicts','extends'}:
+        sources = {entry['item_id'] for entry in relation['evidence']}
+        if not {relation['source_id'],relation['target_id']}.issubset(sources):
+            raise ValueError('Claim comparison requires evidence from both endpoint sources')

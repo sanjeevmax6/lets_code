@@ -105,6 +105,9 @@ def main():
                 recovered = []
                 for path in sorted((library.root/'inbox/events').glob('*.json')):
                     recovered.extend(ingest_event(library,read_json(path)))
+                for item in library.items():
+                    stage = 'published' if item['analysis']['status'] == 'complete' else {'extracted':'extracted','captured':'captured','blocked':'blocked','failed':'failed','unsupported':'unsupported'}.get(item['retrieval']['status'],'queued')
+                    library.job(item['id'],stage,item['retrieval']['error'])
                 result = {'reconciled':len(set(recovered)), 'views':rebuild(library)}
             elif args.command == 'attach':
                 from .ingest import source_version
