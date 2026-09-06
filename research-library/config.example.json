@@ -1,0 +1,9 @@
+{
+  "max_download_bytes": 26214400,
+  "max_pdf_pages": 150,
+  "fetch_timeout_seconds": 30,
+  "firecrawl_enabled": false,
+  "firecrawl_endpoint": "https://api.firecrawl.dev/v2/scrape",
+  "whatsapp_chat_id": null,
+  "whatsapp_session_dir": null
+}

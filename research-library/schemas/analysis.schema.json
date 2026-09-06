@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "enum": [
+        "pending",
+        "complete"
+      ]
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "highlights": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version_id": {
+                "type": "string"
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "page": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "prefix": {
+                "type": "string"
+              },
+              "suffix": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "version_id",
+              "quote",
+              "start",
+              "end",
+              "page",
+              "prefix",
+              "suffix"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "evidence"
+        ]
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version_id": {
+                "type": "string"
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "page": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "prefix": {
+                "type": "string"
+              },
+              "suffix": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "version_id",
+              "quote",
+              "start",
+              "end",
+              "page",
+              "prefix",
+              "suffix"
+            ]
+          }
+        },
+        "required": [
+          "text",
+          "evidence"
+        ]
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "topic_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "entity_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "relationship_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "agent": {
+              "type": "string"
+            },
+            "model": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "prompt_version": {
+              "type": "string"
+            },
+            "run_id": {
+              "type": "string"
+            },
+            "input_hashes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "generated_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "agent",
+            "model",
+            "prompt_version",
+            "run_id",
+            "input_hashes",
+            "generated_at"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "highlights",
+    "claims",
+    "limitations",
+    "topic_ids",
+    "entity_ids",
+    "relationship_ids",
+    "provenance"
+  ]
+}

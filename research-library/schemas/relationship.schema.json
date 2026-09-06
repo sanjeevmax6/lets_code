@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "about",
+        "authored_by",
+        "cites",
+        "related_to",
+        "extends",
+        "supports",
+        "contradicts"
+      ]
+    },
+    "basis": {
+      "enum": [
+        "extracted",
+        "inferred"
+      ]
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string"
+          },
+          "locator": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "version_id": {
+                "type": "string"
+              },
+              "quote": {
+                "type": "string",
+                "minLength": 1
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "page": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "prefix": {
+                "type": "string"
+              },
+              "suffix": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "version_id",
+              "quote",
+              "start",
+              "end",
+              "page",
+              "prefix",
+              "suffix"
+            ]
+          }
+        },
+        "required": [
+          "item_id",
+          "locator"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "source_id",
+    "target_id",
+    "type",
+    "basis",
+    "rationale",
+    "evidence"
+  ]
+}
