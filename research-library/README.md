@@ -2,11 +2,28 @@
 
 Save links and PDFs in a dedicated WhatsApp chat. When you return to your laptop, ask your agent to run this folder's pipeline. It preserves sources, validates evidence-backed JSON, builds a searchable graph, and renders an Obsidian reading vault.
 
+## Everyday use
+
+1. In **Job to-do**, send `!add <link>`, caption a PDF `!add`, or reply to a link/PDF with `!add`. Only your commands are collected.
+2. Back at your laptop, open this folder in Codex or Claude and ask:
+   **“Read AGENTS.md and docs/WORKFLOW.md. Sync WhatsApp, process pending sources, submit their analysis, rebuild the graph, and summarize what I saved.”**
+3. Open `apps/Obsidian.app` → the `vault/` folder → **Start Here** to browse notes, sources, and topics.
+
+Collection runs on demand; no bot replies appear in WhatsApp. No daily pairing is needed. Catch-up uses limited linked-device history, so sync regularly.
+
+To collect manually (this queues items; ask the agent above to analyze them):
+
+```sh
+cd "/Users/sanjeev/Documents/New project/research-library"
+.venv/bin/library sync whatsapp
+.venv/bin/library status
+```
+
 ## Ready on this Mac
 
 Python dependencies and Graphify 0.9.55 are installed locally. Obsidian 1.13.7 is in `apps/Obsidian.app`. The Chrome native host is registered. Private data and applications are excluded from Git.
 
-The Chrome extension is loaded on this Mac. WhatsApp setup requires pairing and selecting Job to-do, followed by a successful reconnect test. The library also works with exported chats, files, or manually added URLs.
+The Chrome extension is loaded on this Mac. WhatsApp is paired with **Job to-do**; reconnect and duplicate prevention were verified. The library also works with exported chats, files, or manually added URLs.
 
 ```sh
 cd research-library
