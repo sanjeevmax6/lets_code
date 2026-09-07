@@ -10,6 +10,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { envelope, resolveAdd } from './events.mjs';
 import { settlePairing, selectGroup } from './session.mjs';
+import { readChatIndex } from './chat-index.mjs';
 
 process.umask(0o077);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -43,6 +44,10 @@ const client = new wwebjs.Client({
 let closing = false;
 let pairedThisRun = false;
 let pending = Promise.resolve();
+let phase = 'initializing WhatsApp';
+function reportError(error) {
+  console.error(`WhatsApp failed while ${phase}: ${error?.stack || error?.message || String(error)}`);
+}
 async function shutdown(code = 0) {
   if (closing) return;
   closing = true;
@@ -106,11 +111,12 @@ async function collect(message) {
 }
 client.on('ready', async () => {
   try {
+    phase = 'settling initial synchronization';
     if (pairedThisRun) console.error('Linked successfully. Allowing 60 seconds for initial session synchronization before continuing…');
     await settlePairing(pairedThisRun);
     if (closing) return;
     if (listing) {
-      const chats = await client.getChats();
+      const chats = await client.pupPage.evaluate(readChatIndex);
       console.log(JSON.stringify(chats.map(c => ({ id: c.id._serialized, name: c.name, isGroup: c.isGroup })), null, 2));
       return shutdown();
     }
@@ -120,7 +126,8 @@ client.on('ready', async () => {
       durable(configPath, JSON.stringify(config, null, 2));
     }
     if (groupName) {
-      chatId = selectGroup(await client.getChats(), groupName);
+      phase = 'looking up the selected group';
+      chatId = selectGroup(await client.pupPage.evaluate(readChatIndex), groupName);
       config.whatsapp_chat_id = chatId;
       config.whatsapp_group_name = groupName;
       durable(configPath, JSON.stringify(config, null, 2));
@@ -133,7 +140,10 @@ client.on('ready', async () => {
       return task;
     };
     if (watch) client.on('message_create', message => { void enqueue(message).catch(error => console.error(error.message)); });
-    const chat = await client.getChatById(chatId);
+    phase = 'opening the selected chat';
+    // fetchMessages needs only the ID and loads only the selected chat.
+    const chat = new wwebjs.Chat(client, { id: { _serialized: chatId } });
+    phase = 'loading recent commands';
     const messages = await chat.fetchMessages({ limit });
     let captured = 0, failed = 0;
     for (const message of messages) {
@@ -147,6 +157,6 @@ client.on('ready', async () => {
       warning: 'Bounded linked-device history only. Export recovery may be needed after downtime.' }));
     if (!watch) return shutdown(failed ? 1 : 0);
     console.error('Watching for your !add commands. No WhatsApp replies are sent. Keep this process and laptop awake.');
-  } catch (error) { console.error(error.message); shutdown(1); }
+  } catch (error) { reportError(error); shutdown(1); }
 });
-client.initialize().catch(error => { console.error(error.message); shutdown(1); });
+client.initialize().catch(error => { reportError(error); shutdown(1); });

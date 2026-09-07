@@ -73,4 +73,6 @@ The connector is unofficial. Its maintainers warn that account blocking is possi
 
 ## Pairing acceptance check
 
-After pairing, send a URL with a comment and a PDF to the selected chat. Sync twice; confirm no duplicate item records. Sleep/restart the laptop, send another item, and inspect what backfills. Verify `library status` and `library doctor`. We cannot establish account-specific catch-up guarantees without this real test.
+After pairing, send `!add URL` and a PDF captioned `!add` to the selected chat. Sync twice; confirm no duplicate item records. Sleep/restart the laptop, send another item, and inspect what backfills. Verify `library status` and `library doctor`. We cannot establish account-specific catch-up guarantees without this real test.
+
+The connector reads cached chat titles and IDs for selection, avoiding the upstream 1.34.7 group-participant metadata failure (`r: r`; see https://github.com/wwebjs/whatsapp-web.js/pull/201910). It supports both `_serialized` and `$1` chat identifiers and loads messages only from the selected chat. No upstream package files are patched. Errors report the failing setup phase.

@@ -3,7 +3,28 @@ import assert from 'node:assert/strict';
 import { accepts, envelope } from './events.mjs';
 import { resolveAdd } from './events.mjs';
 import { selectGroup, settlePairing } from './session.mjs';
+import { readChatIndex } from './chat-index.mjs';
 const sent = { fromMe: true, from: 'me', to: 'reading', timestamp: 1788703200, body: 'A link', id: { _serialized: 'stable' } };
+test('cached chat index supports renamed IDs without loading participant metadata', () => {
+  const chats = [
+    {id:{_serialized:'one@g.us'},formattedTitle:'Job to-do'},
+    {id:{$1:'two@g.us'},name:'Other'},
+    {id:{user:'three',server:'c.us'},name:'Contact'},
+  ];
+  for (const chat of chats) Object.defineProperty(chat,'groupMetadata',{get(){throw new Error('Must not read participants');}});
+  globalThis.window = {require: name => {
+    assert.equal(name,'WAWebCollections');
+    return {Chat:{getModelsArray:()=>chats}};
+  }};
+  try {
+    const index = readChatIndex();
+    assert.equal(selectGroup(index,'Job to-do'),'one@g.us');
+    assert.equal(index[1].id._serialized,'two@g.us');
+    assert.equal(index[2].isGroup,false);
+    chats.push({id:{}});
+    assert.throws(readChatIndex,/Unsupported/);
+  } finally { delete globalThis.window; }
+});
 test('accepts outgoing and incoming selected-chat messages only', () => {
   assert.equal(accepts(sent, 'reading'), true);
   assert.equal(accepts({ ...sent, fromMe: false, from: 'reading' }, 'reading'), true);
