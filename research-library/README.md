@@ -6,7 +6,7 @@ Save links and PDFs in a dedicated WhatsApp chat. When you return to your laptop
 
 Python dependencies and Graphify 0.9.55 are installed locally. Obsidian 1.13.7 is in `apps/Obsidian.app`. The Chrome native host is registered. Private data and applications are excluded from Git.
 
-Two user setup steps remain: pair/select a WhatsApp chat, and load the unpacked Chrome extension. The library also works immediately with exported chats, files, or manually added URLs.
+The Chrome extension is loaded on this Mac. WhatsApp setup requires pairing and selecting Job to-do, followed by a successful reconnect test. The library also works with exported chats, files, or manually added URLs.
 
 ```sh
 cd research-library
@@ -22,7 +22,7 @@ Open `apps/Obsidian.app` and choose `vault/` as an existing vault. Start with **
 ## Daily commands
 
 ```sh
-.venv/bin/library sync whatsapp --self        # first pairing for Message Yourself
+.venv/bin/library sync whatsapp --pair --group "Job to-do"  # first setup
 .venv/bin/library sync whatsapp              # later local sync
 .venv/bin/library run --limit 25              # capture and prepare work
 .venv/bin/library status
@@ -34,6 +34,8 @@ Open `apps/Obsidian.app` and choose `vault/` as an existing vault. Start with **
 ```
 
 For an existing dedicated chat, follow [WhatsApp setup](docs/WHATSAPP.md). For cached highlights beside an article, follow [Chrome setup](docs/BROWSER.md).
+
+In Job to-do, send `!add URL`, caption a PDF `!add`, or reply `!add` to a link/PDF. The collector accepts only your commands. Run `sync whatsapp --watch` for capture while the laptop stays awake, or normal sync for bounded catch-up. No automated messages are sent into the group. The initial pairing settling period is a mitigation; a successful subsequent sync is required to verify that the login persisted.
 
 ## New machine
 

@@ -1,5 +1,31 @@
 # WhatsApp intake
 
+## Job to-do: your account, explicit save commands
+
+One-time setup (use your existing WhatsApp account):
+
+```sh
+.venv/bin/library sync whatsapp --pair --group "Job to-do"
+```
+
+If a QR appears, scan it from Linked Devices. Allow the command to finish: after first pairing it keeps Chrome open for 60 seconds to allow initial synchronization. This mitigates premature shutdown but is not a guarantee of persistence. Verify a restart:
+
+```sh
+.venv/bin/library sync whatsapp --limit 250
+```
+
+Normal sync never displays a new QR: it exits with a pairing-required message if authentication is missing. The selected group's unique ID is saved locally; ambiguous duplicate group names are rejected.
+
+In Job to-do, either send `!add https://example.org/article`, attach a PDF with the caption `!add`, or reply `!add` to a link/PDF message. A reply can include a comment, such as `!add read this weekend`. Only commands sent by the authenticated account are accepted. The referenced message and your command are preserved with the saved source. Ordinary group conversation is not imported. This version does not send acknowledgements into WhatsApp; inspect `library status` for the queue.
+
+For continuous capture while the laptop is awake:
+
+```sh
+.venv/bin/library sync whatsapp --watch
+```
+
+For on-demand catch-up, run normal sync. Both use a bounded history window; old commands or quoted messages may require resending/export recovery. Then ask your agent to run the full analysis pipeline described in `WORKFLOW.md`.
+
 ## Reliable fallback: exported chat
 
 Export the dedicated chat on your phone and place the text file and exported media together in `inbox/imports/`. Unzip an exported archive first using your normal file manager.
@@ -19,7 +45,7 @@ Requirements: Node 22.12+ and Google Chrome installed. The lockfile includes a p
 cd connectors/whatsapp
 npm ci
 cd ../..
-.venv/bin/library sync whatsapp --self
+.venv/bin/library sync whatsapp --pair --self
 ```
 
 `--self` selects your Message Yourself chat and saves its ID locally. Scan the displayed QR using WhatsApp Settings → Linked Devices. The QR and session files are credentials; do not share them.
@@ -27,7 +53,7 @@ cd ../..
 For another existing chat:
 
 ```sh
-.venv/bin/library sync whatsapp --list
+.venv/bin/library sync whatsapp --pair --list
 ```
 
 Copy the chosen ID into `config.local.json` as `whatsapp_chat_id`, then:

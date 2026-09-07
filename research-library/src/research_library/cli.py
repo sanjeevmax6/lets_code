@@ -66,14 +66,18 @@ def main():
     sync.add_argument('--self', action='store_true')
     sync.add_argument('--list', action='store_true')
     sync.add_argument('--watch', action='store_true')
+    sync.add_argument('--pair', action='store_true')
+    sync.add_argument('--group', help='Exact name of the group to select')
     sync.add_argument('--limit', type=int, default=250)
     args = parser.parse_args()
     library = Library(args.root)
     try:
         if args.command == 'sync':
             command = ['node',str(library.root/'connectors/whatsapp/collector.mjs'),'--limit',str(args.limit)]
-            for name in ['self','list','watch']:
+            for name in ['self','list','watch','pair']:
                 if getattr(args,name): command.append('--'+name)
+            if args.group:
+                command.extend(['--group', args.group])
             return subprocess.run(command,cwd=library.root).returncode
         with library.lock():
             if args.command == 'init':
